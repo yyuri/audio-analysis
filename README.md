@@ -1,24 +1,8 @@
 # soundsys2
 
-## Project setup
-```
-npm install
-```
+## Audio real-time anaylisis with VueJS, ChartJS, CanvasHTML and Web Audio API
 
-### Compiles and hot-reloads for development
-```
-npm run serve
-```
+ - Frequency spectrum real time analysis
+ - Sample selection
 
-### Compiles and minifies for production
-```
-npm run build
-```
-
-### Lints and fixes files
-```
-npm run lint
-```
-
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
+###  [Check demo version](https://yyuri.github.io/audio-analysis/).
