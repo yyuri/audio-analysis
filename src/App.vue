@@ -23,30 +23,31 @@
         </v-btn>
         <v-btn style="z-index:0" @click="clearAll">Clean samples</v-btn>
       </div>
-        <v-card  flat class="mx-auto my-auto" :width="width*0.7">
+        <v-card flat class="mx-auto my-auto" :width="width*0.7">
 
           <BarChart :height="190" :updateChart="updateBarChart" :dataarray="dataArray"/>
 
           <LineChart
+          id="chart"
+          ref="linechart"
           :chartData="data"
-          :options="options"
           :range="range"
           :height="400"
+          :selectable="selectable"
           @setrange="setRange"
-          @chartobject="overlayLayer" refs="chart" id="chart" @start="startSelection" @movement="movementSelection" @stop="stopSelection" :selectable="selectable"
-          ref="linechart"
+          @chartobject="overlayLayer"
+          @start="startSelection"
+          @movement="movementSelection"
+          @stop="stopSelection"
           @goToFrame="goToFrame"
           />
 
-            <canvas id="overlay"
-            width="1200"
-            height="400"
-            class="selectable"
-            @mousedown="startSelection"
-            @mousemove="movementSelection"
-            @mouseup="stopSelection"
-            ref="overlaychart"
-            />
+          <canvas id="overlay"
+          class="selectable"
+          @mousedown="startSelection"
+          @mousemove="movementSelection"
+          @mouseup="stopSelection"
+          />
 
 
           <RangeSlider @setrange="setRange" :min="datasetstart" :max="datasetend" :width="width*0.9"/>
@@ -75,42 +76,6 @@ export default {
     RangeSlider
   },
   data: () => ({
-    options: {
-      elements: {
-          point:{
-              radius: 0
-          }
-      },
-      responsive: true,
-      maintainAspectRatio: false,
-      scales: {
-        yAxes: [
-          {
-            gridLines: {
-              display: true,
-              offsetGridLines: false,
-            },
-          }],
-          xAxes: [{
-            gridLines: {
-              display: true,
-              offsetGridLines: false,
-              zeroLineWidth: 2,
-              tickMarkLength: 5,
-
-            },
-            ticks: {
-                padding: 10,
-            }
-          }]
-      },
-      legend: {
-          display: false,
-      },
-      animation: {
-        duration: 0
-      }
-    },
     data: {
       labels: [],
       datasets: [{
@@ -140,6 +105,7 @@ export default {
     bordercolor: 'hsla(2, 12%, 50%,0.4)',
     rangeselections: [],
     dataArray: null,
+    audioCtx: null,
     audio: null,
     source: null,
     analyser: null,
@@ -149,10 +115,10 @@ export default {
     chartwidth: null,
     motion: null,
     playing: false,
-    overlaybtn: true,
   }),
   mounted () {
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    this.audioCtx = audioCtx;
     this.audio = document.querySelector('audio');
     this.source = audioCtx.createMediaElementSource(this.audio);
 
@@ -226,18 +192,18 @@ export default {
       }
     },
     play() {
+      this.audioCtx.resume().then(() => {
+        console.log('Playback resumed successfully');
+      });
       this.playing = true;
       this.audio.play();
-
-      //let labels = ["20Hz", "25 Hz", "31.5 Hz", "40 Hz", "50 Hz", "63 Hz", "80 Hz", "100 Hz", "125 Hz", "160 Hz", "200 Hz", "250 Hz", "315 Hz", "400 Hz", "500 Hz", "630 Hz", "800 Hz", "1000 Hz", "1250 Hz", "1600 Hz", "2000 Hz", "2500 Hz", "3150 Hz", "4000 Hz", "5000 Hz", "6300 Hz", "8000 Hz", "10 kHz", "12,5 kHz", "16 kHz", "20 kHz"];
       this.analyserinterval = setInterval(() => {
         let buffer = this.analyser.frequencyBinCount;
         this.dataArray = new Uint8Array(buffer);
         this.analyser.getByteFrequencyData(this.dataArray);
         this.updateBarChart = !this.updateBarChart;
-      }, 90);
+      }, 60);
       this.motion = window.requestAnimationFrame(this.progressBar)
-      //this.motion = window.requestAnimationFrame(this.progressBar);
     },
     pause() {
       this.playing = false;
@@ -376,9 +342,6 @@ export default {
       else if(this.selectionRect.startIndex == null) {
         this.overlay.globalAlpha = 0.5;
         let x = point._view.x;
-        console.log(x)
-        console.log(point._index)
-
         this.overlay.clearRect(0, 0, this.overlay.canvas.width, this.overlay.canvas.height);
         this.overlay.fillRect(x-34,this.starty,2,this.stopy);
       }
@@ -394,8 +357,6 @@ export default {
         stopIndex: null
       };
       this.selectable = false;
-
-
     },
     addNewSelection(min,max) {
       this.rangeselections.push(min);

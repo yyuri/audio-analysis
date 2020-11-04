@@ -8,11 +8,46 @@ export default {
   props: {
     range: Array,
     selectable: Boolean,
-    options: Object,
     chartData: Object
   },
   data: () => ({
     drag: false,
+    options: {
+      elements: {
+          point:{
+              radius: 0
+          }
+      },
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        yAxes: [
+          {
+            gridLines: {
+              display: true,
+              offsetGridLines: false,
+            },
+          }],
+          xAxes: [{
+            gridLines: {
+              display: true,
+              offsetGridLines: false,
+              zeroLineWidth: 2,
+              tickMarkLength: 5,
+
+            },
+            ticks: {
+                padding: 10,
+            }
+          }]
+      },
+      legend: {
+          display: false,
+      },
+      animation: {
+        duration: 0
+      }
+    },
   }),
   mounted () {
     this.renderChart(this.chartData, this.options)
